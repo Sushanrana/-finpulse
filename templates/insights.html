@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Insights{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="overline">Rule-based advice</p>
+    <h1>Insights &amp; recommendations</h1>
+    <p class="muted">Tips generated from your own transactions and goals. Every tip shows the numbers behind it.</p>
+  </div>
+</header>
+
+{% if summary.categories %}
+<section class="card" data-testid="category-share-card">
+  <header class="card-head"><h2>Where your spending goes</h2></header>
+  <ul class="share-list">
+    {% for c in summary.categories[:6] %}
+      <li data-testid="category-share-row">
+        <span class="share-name">{{ c.category }}</span>
+        <div class="progress slim"><span data-pct="{{ (c.share * 100)|round(1) }}"></span></div>
+        <span class="mono share-pct">{{ (c.share * 100)|round|int }}%</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<ul class="rec-list" data-testid="recommendation-list">
+  {% for r in recs %}
+    <li class="card rec rec-{{ r.kind }}" data-testid="recommendation-item">
+      <span class="badge badge-{{ {'success':'success','info':'info','warning':'warning','danger':'danger'}[r.kind] }}">{{ r.kind|title }}</span>
+      <strong data-testid="recommendation-title">{{ r.title }}</strong>
+      <span data-testid="recommendation-message">{{ r.message }}</span>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

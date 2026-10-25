@@ -1,0 +1,6 @@
+<section class="card error-card" data-testid="error-page">
+  <p class="overline mono">Error {{ code }}</p>
+  <h1 data-testid="error-title">{{ title }}</h1>
+  <p class="muted" data-testid="error-message">{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('index') }}" data-testid="error-home-link">Back to FinPulse</a>
+</section>

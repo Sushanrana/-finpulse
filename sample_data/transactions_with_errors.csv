@@ -1,0 +1,13 @@
+date,description,category,amount,type
+2025-04-01,Part-time wage,Salary,1450.00,income
+2025-04-02,Share-house rent,Rent,1040.00,expense
+2025-13-45,Bad date row,Groceries,50.00,expense
+2025-04-05,Bad amount row,Dining,twelve dollars,expense
+2025-04-06,Too many decimals,Dining,12.345,expense
+2025-04-07,,Groceries,30.00,expense
+2025-04-08,Unknown type,Groceries,30.00,transfer
+2025-04-09,=HYPERLINK("http://evil.example"),Other,1.00,expense
+2025-04-10,Zero amount,Other,0,expense
+2025-04-11,Groceries - Aldi,Groceries,90.00,expense
+2025-04-11,Groceries - Aldi,Groceries,90.00,expense
+04/12/2025,Valid AU date format,Transport,40.00,expense

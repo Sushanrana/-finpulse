@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Health score{% endblock %}
+{% block content %}
+{% set C = 339.292 %}
+<header class="page-head">
+  <div>
+    <p class="overline">Explainable scoring</p>
+    <h1>Financial health score</h1>
+    <p class="muted">A rule-based 0–100 score built from how you use your money, not how much you earn.</p>
+  </div>
+</header>
+
+<section class="health-hero card grid-texture" data-testid="health-score-card">
+  <div class="ring-wrap">
+    <svg viewBox="0 0 120 120" class="ring" aria-hidden="true">
+      <circle cx="60" cy="60" r="54" class="ring-track"/>
+      <circle cx="60" cy="60" r="54" class="ring-value score-stroke-{{ health.grade|lower|replace(' ','-') }}"
+              stroke-dasharray="{{ C }}" stroke-dashoffset="{{ C * (1 - health.score / 100) }}" transform="rotate(-90 60 60)"/>
+    </svg>
+    <div class="ring-label">
+      <span class="ring-num mono" data-testid="health-score-value" data-count="{{ health.score }}">{{ health.score }}</span>
+      <span class="small muted">out of 100</span>
+    </div>
+  </div>
+  <div>
+    <span class="badge badge-grade grade-{{ health.grade|lower|replace(' ','-') }}" data-testid="health-score-grade">{{ health.grade }}</span>
+    <h2 class="hero-sub">Score = savings rate (40) + expense balance (30) + goal progress (30)</h2>
+    <p class="muted">Two people with the same income can score very differently. What counts is how much you keep, how your spending is balanced between needs and wants, and how far along your goals are.</p>
+  </div>
+</section>
+
+<section class="breakdown" data-testid="health-breakdown">
+  {% for c in health.components %}
+    <article class="card breakdown-item" data-testid="health-component-{{ c.key|replace('_','-') }}">
+      <header class="card-head">
+        <h2>{{ c.label }} <span class="muted small">({{ c.weight }}%)</span></h2>
+        <span class="mono points" data-testid="health-component-points-{{ c.key|replace('_','-') }}">{{ c.points }} / {{ c.weight }}</span>
+      </header>
+      <div class="progress slim"><span data-pct="{{ (c.points / c.weight * 100)|round(1) }}"></span></div>
+      <p class="small"><span class="mono metric">{{ c.value }}</span> {{ c.explanation }}</p>
+    </article>
+  {% endfor %}
+</section>
+<p class="small muted">Want to improve? See <a href="{{ url_for('insights') }}" data-testid="health-insights-link">your personalised insights</a>.</p>
+{% endblock %}

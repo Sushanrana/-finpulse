@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Time Machine{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="overline">Opportunity cost</p>
+    <h1>Time Machine</h1>
+    <p class="muted">What if you invested that money instead of spending it?</p>
+  </div>
+</header>
+
+<section class="tm-grid">
+  <article class="card" data-testid="time-machine-form-card">
+    <header class="card-head"><h2>Your scenario</h2></header>
+    {% if errors %}<div class="alert alert-error" role="alert" data-testid="time-machine-errors">{% for e in errors %}<p>{{ e }}</p>{% endfor %}</div>{% endif %}
+    <form method="get" action="{{ url_for('time_machine') }}" class="form" novalidate data-testid="time-machine-form">
+      <label class="field"><span>Monthly amount (A$)</span><input type="text" inputmode="decimal" name="monthly" value="{{ monthly_raw }}" required data-testid="tm-monthly-input"></label>
+      <label class="field"><span>Expected annual return (%)</span><input type="text" inputmode="decimal" name="rate" value="{{ rate_raw }}" required data-testid="tm-rate-input">
+        <small class="hint">0–30%. Diversified share funds have historically averaged around 7–10% a year (not guaranteed).</small></label>
+      <button class="btn btn-primary btn-block" type="submit" data-testid="time-machine-simulate-button">Run the Time Machine</button>
+    </form>
+    {% if suggestion %}<p class="small muted" data-testid="tm-suggestion">Tip: you spend about <strong class="mono">{{ suggestion.monthly|aud }}</strong>/month on {{ suggestion.category|lower }}. That's the default amount above.</p>{% endif %}
+    <div class="formula mono small" data-testid="tm-formula">FV = P × (((1 + i)<sup>n</sup> − 1) / i)<br>i = {{ result.rate }}% / 12 · n = years × 12</div>
+  </article>
+
+  <div class="tm-results">
+    <div class="horizon-grid">
+      {% for h in result.horizons %}
+        <article class="card horizon" data-testid="tm-horizon-{{ h.years }}">
+          <p class="overline">{{ h.years }} years</p>
+          <p class="kpi-value mono text-invested" data-testid="tm-invested-{{ h.years }}">{{ h.invested|aud }}</p>
+          <p class="small">if invested · <span class="text-expense mono" data-testid="tm-spent-{{ h.years }}">{{ h.spent|aud }}</span> if spent</p>
+          <p class="small muted">Growth: <span class="mono text-income">{{ h.growth|aud }}</span> ({{ h.multiple }}×)</p>
+        </article>
+      {% endfor %}
+    </div>
+    <article class="card" data-testid="tm-chart-card">
+      <header class="card-head"><h2>Spend it vs invest it</h2><span class="small muted">{{ result.monthly|aud }}/month at {{ result.rate }}%</span></header>
+      <div class="chart-box tall"><canvas id="chart-time-machine" role="img" aria-label="Line chart comparing money spent versus money invested over 20 years"></canvas></div>
+    </article>
+  </div>
+</section>
+<script type="application/json" id="time-machine-data">{{ result.chart|tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>
+{% endblock %}

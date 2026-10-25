@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="overline">Overview</p>
+    <h1>Your money, at a glance</h1>
+    <p class="muted">Based on {{ summary.count }} transaction{{ 's' if summary.count != 1 }} across {{ summary.months }} month{{ 's' if summary.months != 1 }}.</p>
+  </div>
+  <a href="{{ url_for('health') }}" class="score-pill score-{{ health.grade|lower|replace(' ','-') }}" data-testid="dashboard-health-badge">
+    <span class="mono score-pill-num" data-count="{{ health.score }}">{{ health.score }}</span>
+    <span><strong>Health score</strong><br><span class="small">{{ health.grade }}</span></span>
+  </a>
+</header>
+
+<section class="kpi-grid" aria-label="Key figures">
+  <article class="card kpi" data-testid="kpi-income"><p class="kpi-label">Total income</p><p class="kpi-value mono text-income" data-testid="kpi-income-value">{{ summary.income|aud }}</p><p class="kpi-sub">≈ {{ summary.avg_monthly_income|aud }} / month</p></article>
+  <article class="card kpi" data-testid="kpi-expenses"><p class="kpi-label">Total expenses</p><p class="kpi-value mono text-expense" data-testid="kpi-expenses-value">{{ summary.expense|aud }}</p><p class="kpi-sub">≈ {{ summary.avg_monthly_expense|aud }} / month</p></article>
+  <article class="card kpi" data-testid="kpi-net"><p class="kpi-label">Net savings</p><p class="kpi-value mono {{ 'text-income' if summary.net >= 0 else 'text-expense' }}" data-testid="kpi-net-value">{{ summary.net|aud }}</p><p class="kpi-sub">≈ {{ summary.avg_monthly_net|aud }} / month</p></article>
+  <article class="card kpi" data-testid="kpi-savings-rate"><p class="kpi-label">Savings rate</p><p class="kpi-value mono text-savings" data-testid="kpi-savings-rate-value">{{ summary.savings_rate|pct }}</p><p class="kpi-sub">Target: 20%+</p></article>
+</section>
+
+{% if summary.count == 0 %}
+  <section class="card empty-state" data-testid="dashboard-empty-state">
+    <h2>No transactions yet</h2>
+    <p class="muted">Add your first income or expense, or import a CSV to light up your charts.</p>
+    <a class="btn btn-primary" href="{{ url_for('transactions') }}" data-testid="dashboard-add-transactions-link">{{ icon('plus', 16) }} Add transactions</a>
+  </section>
+{% else %}
+<section class="chart-grid">
+  <article class="card span-5" data-testid="chart-card-category">
+    <header class="card-head"><h2>Spending by category</h2></header>
+    <div class="chart-box"><canvas id="chart-category" aria-label="Doughnut chart of spending by category" role="img"></canvas></div>
+  </article>
+  <article class="card span-7" data-testid="chart-card-monthly">
+    <header class="card-head"><h2>Monthly income vs expense</h2></header>
+    <div class="chart-box"><canvas id="chart-monthly" aria-label="Bar chart of monthly income versus expenses" role="img"></canvas></div>
+  </article>
+  <article class="card span-7" data-testid="chart-card-trend">
+    <header class="card-head"><h2>Savings trend</h2><span class="muted small">Cumulative net savings</span></header>
+    <div class="chart-box"><canvas id="chart-trend" aria-label="Line chart of cumulative savings" role="img"></canvas></div>
+  </article>
+  <article class="card span-5" data-testid="dashboard-tips-card">
+    <header class="card-head"><h2>Top tips</h2><a href="{{ url_for('insights') }}" class="small" data-testid="dashboard-all-insights-link">All insights →</a></header>
+    <ul class="rec-list compact">
+      {% for r in recs %}
+        <li class="rec rec-{{ r.kind }}" data-testid="dashboard-rec-item"><strong>{{ r.title }}</strong><span>{{ r.message }}</span></li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+
+<section class="card" data-testid="recent-transactions-card">
+  <header class="card-head"><h2>Recent transactions</h2><a href="{{ url_for('transactions') }}" class="small" data-testid="dashboard-view-all-transactions-link">View all →</a></header>
+  <ul class="recent-list">
+    {% for t in recent %}
+      <li data-testid="recent-transaction-row">
+        <span class="recent-desc"><strong>{{ t.description }}</strong><span class="muted small">{{ t.category }} · {{ t.date|au_date }}</span></span>
+        <span class="mono {{ 'text-income' if t.type == 'income' else 'text-expense' }}">{{ '+' if t.type == 'income' else '−' }}{{ t.amount|aud }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+<script type="application/json" id="dashboard-data">{{ charts|tojson }}</script>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}" defer></script>
+{% endblock %}

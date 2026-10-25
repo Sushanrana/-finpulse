@@ -1,0 +1,31 @@
+date,description,category,amount,type
+2025-01-01,Part-time wage,Salary,1450.00,income
+2025-01-02,Share-house rent,Rent,1040.00,expense
+2025-01-04,Groceries - Aldi,Groceries,96.40,expense
+2025-01-06,Uber Eats,Dining,38.50,expense
+2025-01-09,Netflix,Subscriptions,18.99,expense
+2025-01-11,Groceries - Coles,Groceries,104.10,expense
+2025-01-13,Campus café,Dining,14.20,expense
+2025-01-15,Part-time wage,Salary,1450.00,income
+2025-01-17,Opal top-up,Transport,40.00,expense
+2025-01-20,Freelance logo design,Freelance,350.00,income
+2025-01-22,Cinema tickets,Entertainment,42.00,expense
+2025-01-25,Sushi train,Dining,47.80,expense
+2025-02-01,Part-time wage,Salary,1450.00,income
+2025-02-02,Share-house rent,Rent,1040.00,expense
+2025-02-03,Textbooks,Education,129.95,expense
+2025-02-05,Spotify Premium,Subscriptions,13.99,expense
+2025-02-07,Groceries - Aldi,Groceries,88.75,expense
+2025-02-10,Brunch with friends,Dining,52.30,expense
+2025-02-12,Phone plan,Utilities,35.00,expense
+2025-02-15,Part-time wage,Salary,1450.00,income
+2025-02-18,Sneakers,Shopping,139.00,expense
+2025-02-21,Groceries - Woolworths,Groceries,112.60,expense
+2025-02-24,Pizza night,Dining,33.00,expense
+2025-03-01,Part-time wage,Salary,1450.00,income
+2025-03-02,Share-house rent,Rent,1040.00,expense
+2025-03-04,Groceries - Aldi,Groceries,91.25,expense
+2025-03-08,Uber Eats,Dining,41.90,expense
+14/03/2025,Opal top-up,Transport,40.00,expense
+15/03/2025,Part-time wage,Salary,1450.00,income
+20/03/2025,Birthday money from Nan,Gifts,100.00,income

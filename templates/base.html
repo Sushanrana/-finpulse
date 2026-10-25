@@ -1,0 +1,58 @@
+{% from "_macros.html" import icon, csrf %}
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FinPulse{% endblock %} · FinPulse</title>
+  <meta name="description" content="FinPulse: track spending, hit savings goals, score your financial health and see what your money could grow into.">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{{ 'shell' if g.user else 'auth' }}">
+{% if g.user %}
+  <header class="topbar" data-testid="mobile-topbar">
+    <a class="brand" href="{{ url_for('dashboard') }}" data-testid="topbar-brand-link"><span class="brand-mark">F</span>FinPulse</a>
+    <button class="icon-btn" type="button" data-nav-toggle aria-controls="sidebar" aria-expanded="false" data-testid="mobile-nav-toggle" aria-label="Open menu">{{ icon('menu', 22) }}</button>
+  </header>
+  <aside class="sidebar" id="sidebar" data-testid="sidebar">
+    <a class="brand" href="{{ url_for('dashboard') }}" data-testid="sidebar-brand-link"><span class="brand-mark">F</span>FinPulse</a>
+    <nav class="nav" aria-label="Main">
+      {% set links = [
+        ('dashboard', 'Dashboard', 'dashboard'),
+        ('transactions', 'Transactions', 'transactions'),
+        ('goals', 'Savings goals', 'goals'),
+        ('health', 'Health score', 'health'),
+        ('insights', 'Insights', 'insights'),
+        ('time_machine', 'Time Machine', 'time'),
+      ] %}
+      {% for endpoint, label, ic in links %}
+        <a href="{{ url_for(endpoint) }}" class="nav-link {{ 'active' if request.endpoint == endpoint }}" data-testid="nav-{{ endpoint|replace('_','-') }}-link"
+           {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ icon(ic) }}<span>{{ label }}</span></a>
+      {% endfor %}
+    </nav>
+    <div class="sidebar-foot">
+      <div class="user-chip" data-testid="sidebar-user-email" title="{{ g.user.email }}">
+        <span class="avatar">{{ g.user.email[0]|upper }}</span><span class="truncate">{{ g.user.email }}</span>
+      </div>
+      <form method="post" action="{{ url_for('logout') }}">
+        {{ csrf() }}
+        <button class="btn btn-ghost btn-block" type="submit" data-testid="logout-button">{{ icon('logout', 16) }} Log out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="scrim" data-nav-close></div>
+  <main class="main" id="main">
+    {% include "_flash.html" %}
+    {% block content %}{% endblock %}
+    <footer class="foot-note">FinPulse is for education only, not financial advice. No card or bank details are stored.</footer>
+  </main>
+{% else %}
+  <main class="auth-main">
+    {% block auth %}{% endblock %}
+  </main>
+{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

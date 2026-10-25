@@ -1,0 +1,12 @@
+{% from "_macros.html" import icon %}
+<section class="auth-pitch" data-testid="auth-pitch">
+  <a class="brand brand-lg" href="{{ url_for('login') }}"><span class="brand-mark">F</span>FinPulse</a>
+  <h1 class="pitch-title">Know where your money goes, and where it <em>could</em> go.</h1>
+  <p class="muted">Tracking, goals, a health score, smart tips and a 20-year projection in one simple dashboard built for students and young professionals.</p>
+  <ul class="pitch-list">
+    <li>{{ icon('shield', 16) }} Passwords hashed with scrypt, never stored in plain text</li>
+    <li>{{ icon('lock', 16) }} CSRF-protected forms and per-user data isolation</li>
+    <li>{{ icon('health', 16) }} Explainable 0–100 financial health score</li>
+  </ul>
+  <div class="pitch-badge mono" data-testid="auth-security-badge"><span class="dot"></span> No card or bank details stored</div>
+</section>

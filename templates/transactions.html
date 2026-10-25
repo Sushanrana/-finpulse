@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, csrf %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="overline">Money in &amp; out</p>
+    <h1>Transactions</h1>
+    <p class="muted">Add income and expenses by hand, or bulk-import a CSV (max {{ '{:,}'.format(max_rows) }} rows).</p>
+  </div>
+</header>
+
+<section class="split">
+  <article class="card" data-testid="add-transaction-card">
+    <header class="card-head"><h2>Add a transaction</h2></header>
+    {% if form_errors %}
+      <div class="alert alert-error" role="alert" data-testid="transaction-form-errors"><ul>{% for e in form_errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+    {% endif %}
+    <form method="post" action="{{ url_for('transactions') }}" class="form form-grid" novalidate data-testid="add-transaction-form">
+      {{ csrf() }}
+      <div class="segmented field-full" role="radiogroup" aria-label="Type">
+        <label><input type="radio" name="type" value="expense" {{ 'checked' if form.type != 'income' }} data-testid="tx-type-expense-radio"><span>Expense</span></label>
+        <label><input type="radio" name="type" value="income" {{ 'checked' if form.type == 'income' }} data-testid="tx-type-income-radio"><span>Income</span></label>
+      </div>
+      <label class="field"><span>Date</span><input type="date" name="date" value="{{ form.date }}" required data-testid="tx-date-input"></label>
+      <label class="field"><span>Amount (A$)</span><input type="text" inputmode="decimal" name="amount" value="{{ form.amount }}" placeholder="0.00" required data-testid="tx-amount-input"></label>
+      <label class="field field-full"><span>Description</span><input type="text" name="description" value="{{ form.description }}" maxlength="120" placeholder="e.g. Weekly groceries" required data-testid="tx-description-input"></label>
+      <label class="field field-full"><span>Category</span>
+        <input type="text" name="category" value="{{ form.category }}" list="category-options" maxlength="40" placeholder="Pick or type a category" required data-testid="tx-category-input">
+        <datalist id="category-options">{% for c in CATEGORIES %}<option value="{{ c }}">{% endfor %}</datalist>
+      </label>
+      <button class="btn btn-primary field-full" type="submit" data-testid="tx-submit-button">{{ icon('plus', 16) }} Add transaction</button>
+    </form>
+  </article>
+
+  <article class="card" data-testid="csv-import-card">
+    <header class="card-head"><h2>Import CSV</h2></header>
+    <p class="muted small">Required columns: <span class="mono">date, description, category, amount</span>. Optional: <span class="mono">type</span> (income/expense); without it, negative amounts are treated as expenses. Dates as <span class="mono">YYYY-MM-DD</span> or <span class="mono">DD/MM/YYYY</span>. Duplicates are skipped.</p>
+    <form method="post" action="{{ url_for('import_transactions') }}" enctype="multipart/form-data" class="form" data-testid="csv-import-form">
+      {{ csrf() }}
+      <label class="dropzone" data-testid="csv-dropzone">
+        {{ icon('upload', 22) }}
+        <span data-file-label>Choose a .csv file (max 2 MB)</span>
+        <input type="file" name="csv_file" accept=".csv,text/csv" required data-testid="csv-file-input">
+      </label>
+      <button class="btn btn-secondary btn-block" type="submit" data-testid="csv-import-submit-button">{{ icon('upload', 16) }} Import</button>
+    </form>
+    <p class="small muted sample-links">Samples:
+      <a href="{{ url_for('sample_csv', name='transactions_sample.csv') }}" data-testid="sample-csv-link">{{ icon('download', 14) }} valid</a>
+      <a href="{{ url_for('sample_csv', name='transactions_with_errors.csv') }}" data-testid="sample-errors-csv-link">{{ icon('download', 14) }} with errors</a>
+      <a href="{{ url_for('sample_csv', name='bank_export_signed.csv') }}" data-testid="sample-signed-csv-link">{{ icon('download', 14) }} bank export</a>
+    </p>
+    {% if import_report %}
+      {% if import_report.file_error %}
+        <div class="alert alert-error" role="alert" data-testid="csv-file-error">{{ import_report.file_error }}</div>
+      {% else %}
+        <div class="import-report" data-testid="csv-import-report">
+          <div class="report-stats">
+            <span class="badge badge-success" data-testid="csv-imported-count">{{ import_report.imported }} imported</span>
+            <span class="badge {{ 'badge-danger' if import_report.skipped else 'badge-info' }}" data-testid="csv-skipped-count">{{ import_report.skipped }} skipped</span>
+            <span class="badge badge-info">{{ import_report.total_rows }} rows read</span>
+          </div>
+          {% if import_report.errors %}
+            <ul class="error-list mono" data-testid="csv-row-errors">
+              {% for e in import_report.errors %}<li>{{ e }}</li>{% endfor %}
+              {% if import_report.more_errors %}<li>…and {{ import_report.more_errors }} more.</li>{% endif %}
+            </ul>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+  </article>
+</section>
+
+<section class="card" data-testid="transactions-list-card">
+  <header class="card-head wrap">
+    <h2>History</h2>
+    <form method="get" action="{{ url_for('transactions') }}" class="filters" data-testid="transactions-filter-form">
+      <select name="type" data-testid="filter-type-select" aria-label="Filter by type">
+        <option value="">All types</option>
+        <option value="income" {{ 'selected' if filters.type == 'income' }}>Income</option>
+        <option value="expense" {{ 'selected' if filters.type == 'expense' }}>Expense</option>
+      </select>
+      <select name="category" data-testid="filter-category-select" aria-label="Filter by category">
+        <option value="">All categories</option>
+        {% for c in categories %}<option value="{{ c }}" {{ 'selected' if filters.category == c }}>{{ c }}</option>{% endfor %}
+      </select>
+      <input type="month" name="month" value="{{ filters.month }}" data-testid="filter-month-input" aria-label="Filter by month">
+      <button class="btn btn-ghost" type="submit" data-testid="filter-apply-button">Filter</button>
+      {% if filters.type or filters.category or filters.month %}<a class="btn btn-ghost" href="{{ url_for('transactions') }}" data-testid="filter-clear-link">Clear</a>{% endif %}
+    </form>
+  </header>
+  <div class="mini-stats">
+    <span>In: <strong class="mono text-income" data-testid="list-total-income">{{ totals.income|aud }}</strong></span>
+    <span>Out: <strong class="mono text-expense" data-testid="list-total-expense">{{ totals.expense|aud }}</strong></span>
+    <span>Count: <strong class="mono" data-testid="list-count">{{ transactions|length }}</strong></span>
+  </div>
+  {% if transactions %}
+  <div class="table-wrap">
+    <table class="table" data-testid="transactions-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="num">Amount</th><th><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+      {% for t in transactions %}
+        <tr data-testid="transaction-row">
+          <td class="mono nowrap">{{ t.date|au_date }}</td>
+          <td data-testid="transaction-description">{{ t.description }}</td>
+          <td><span class="badge badge-neutral">{{ t.category }}</span></td>
+          <td class="num mono {{ 'text-income' if t.type == 'income' else 'text-expense' }}" data-testid="transaction-amount">{{ '+' if t.type == 'income' else '−' }}{{ t.amount|aud }}</td>
+          <td class="num">
+            <form method="post" action="{{ url_for('delete_transaction', tx_id=t.id) }}" data-confirm="Delete this transaction?">
+              {{ csrf() }}<input type="hidden" name="next_url" value="{{ request.full_path if request.query_string else url_for('transactions') }}">
+              <button class="icon-btn danger" type="submit" aria-label="Delete transaction" data-testid="transaction-delete-button-{{ t.id }}">{{ icon('trash', 16) }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="muted empty-inline" data-testid="transactions-empty">No transactions match. Add one above or import a CSV.</p>
+  {% endif %}
+</section>
+{% endblock %}

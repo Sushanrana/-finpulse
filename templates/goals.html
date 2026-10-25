@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, csrf %}
+{% block title %}Savings goals{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="overline">Save with purpose</p>
+    <h1>Savings goals</h1>
+    <p class="muted">Your average monthly savings: <strong class="mono {{ 'text-income' if monthly_savings > 0 else 'text-expense' }}" data-testid="goals-monthly-savings">{{ monthly_savings|aud }}</strong></p>
+  </div>
+</header>
+
+<section class="split goals-layout">
+  <article class="card" data-testid="create-goal-card">
+    <header class="card-head"><h2>New goal</h2></header>
+    {% if errors %}<div class="alert alert-error" role="alert" data-testid="goal-form-errors"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+    <form method="post" action="{{ url_for('goals') }}" class="form" novalidate data-testid="create-goal-form">
+      {{ csrf() }}
+      <label class="field"><span>Goal name</span><input type="text" name="name" value="{{ form.name }}" maxlength="60" placeholder="e.g. Emergency fund" required data-testid="goal-name-input"></label>
+      <label class="field"><span>Target (A$)</span><input type="text" inputmode="decimal" name="target" value="{{ form.target }}" placeholder="3000" required data-testid="goal-target-input"></label>
+      <label class="field"><span>Already saved (A$)</span><input type="text" inputmode="decimal" name="saved" value="{{ form.saved }}" placeholder="0" data-testid="goal-saved-input"></label>
+      <button class="btn btn-primary btn-block" type="submit" data-testid="goal-submit-button">{{ icon('plus', 16) }} Create goal</button>
+    </form>
+  </article>
+
+  <div class="goal-list" data-testid="goal-list">
+    {% for goal in goals %}
+      <article class="card goal-card {{ 'goal-done' if goal.progress >= 1 }}" data-testid="goal-card">
+        <header class="card-head">
+          <h2 data-testid="goal-name">{{ goal.name }}</h2>
+          <span class="mono goal-pct" data-testid="goal-percent">{{ (goal.progress * 100)|round|int }}%</span>
+        </header>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ (goal.progress * 100)|round|int }}" aria-label="{{ goal.name }} progress">
+          <span data-pct="{{ (goal.progress * 100)|round(1) }}"></span>
+        </div>
+        <p class="goal-meta mono"><span data-testid="goal-saved">{{ goal.saved|aud }}</span> <span class="muted">of</span> <span data-testid="goal-target">{{ goal.target|aud }}</span></p>
+        <p class="small muted" data-testid="goal-eta">
+          {% if goal.progress >= 1 %}Goal reached!
+          {% elif goal.months_left %}{{ goal.remaining|aud }} to go, about {{ goal.months_left|int }} month{{ 's' if goal.months_left != 1 }} at your current pace.
+          {% else %}{{ goal.remaining|aud }} to go. Increase your monthly savings to get an estimate.{% endif %}
+        </p>
+        <div class="goal-actions">
+          <form method="post" action="{{ url_for('deposit_goal', goal_id=goal.id) }}" class="inline-form">
+            {{ csrf() }}
+            <input type="text" inputmode="decimal" name="amount" placeholder="A$ amount" aria-label="Amount to add" required data-testid="goal-deposit-input-{{ goal.id }}">
+            <button class="btn btn-secondary" type="submit" data-testid="goal-deposit-button-{{ goal.id }}">Add</button>
+          </form>
+          <form method="post" action="{{ url_for('delete_goal', goal_id=goal.id) }}" data-confirm="Delete this goal?">
+            {{ csrf() }}
+            <button class="icon-btn danger" type="submit" aria-label="Delete goal" data-testid="goal-delete-button-{{ goal.id }}">{{ icon('trash', 16) }}</button>
+          </form>
+        </div>
+      </article>
+    {% else %}
+      <article class="card empty-state" data-testid="goals-empty-state">
+        <h2>No goals yet</h2>
+        <p class="muted">Create your first goal. An emergency fund of three months' expenses is a great start.</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

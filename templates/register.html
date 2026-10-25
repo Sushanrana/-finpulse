@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Create account{% endblock %}
+{% block auth %}
+<div class="auth-grid">
+  {% include "_auth_pitch.html" %}
+  <section class="auth-card card" aria-labelledby="register-title">
+    {% include "_flash.html" %}
+    <p class="overline">Get started, free</p>
+    <h2 id="register-title">Create your account</h2>
+    {% if errors %}
+      <div class="alert alert-error" role="alert" data-testid="register-errors">
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+    <form method="post" action="{{ url_for('register') }}" class="form" novalidate data-testid="register-form">
+      {{ csrf() }}
+      <label class="field"><span>Email</span>
+        <input type="email" name="email" value="{{ email }}" autocomplete="email" required maxlength="254" data-testid="register-email-input">
+      </label>
+      <label class="field"><span>Password</span>
+        <input type="password" name="password" autocomplete="new-password" required minlength="8" maxlength="128" data-testid="register-password-input">
+        <small class="hint">At least 8 characters, with a letter and a number.</small>
+      </label>
+      <label class="field"><span>Confirm password</span>
+        <input type="password" name="confirm_password" autocomplete="new-password" required maxlength="128" data-testid="register-confirm-input">
+      </label>
+      <button class="btn btn-primary btn-block" type="submit" data-testid="register-submit-button">Create account</button>
+    </form>
+    <p class="muted small">Already have an account? <a href="{{ url_for('login') }}" data-testid="go-to-login-link">Log in</a></p>
+  </section>
+</div>
+{% endblock %}

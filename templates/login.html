@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Log in{% endblock %}
+{% block auth %}
+<div class="auth-grid">
+  {% include "_auth_pitch.html" %}
+  <section class="auth-card card" aria-labelledby="login-title">
+    {% include "_flash.html" %}
+    <p class="overline">Welcome back</p>
+    <h2 id="login-title">Log in to FinPulse</h2>
+    {% if error %}<div class="alert alert-error" role="alert" data-testid="login-error">{{ error }}</div>{% endif %}
+    <form method="post" action="{{ url_for('login') }}" class="form" novalidate data-testid="login-form">
+      {{ csrf() }}
+      <label class="field"><span>Email</span>
+        <input type="email" name="email" value="{{ email }}" autocomplete="email" required maxlength="254" data-testid="login-email-input">
+      </label>
+      <label class="field"><span>Password</span>
+        <input type="password" name="password" autocomplete="current-password" required maxlength="128" data-testid="login-password-input">
+      </label>
+      <button class="btn btn-primary btn-block" type="submit" data-testid="login-submit-button">Log in</button>
+    </form>
+    <p class="muted small">New here? <a href="{{ url_for('register') }}" data-testid="go-to-register-link">Create an account</a></p>
+    <p class="muted small demo-hint" data-testid="demo-credentials-hint">Demo: <span class="mono">demo@finpulse.app</span> / <span class="mono">Demo@1234</span></p>
+  </section>
+</div>
+{% endblock %}
